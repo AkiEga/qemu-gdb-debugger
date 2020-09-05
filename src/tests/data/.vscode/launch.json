@@ -1,0 +1,11 @@
+{
+	"configurations": [
+		{
+			"name": "Run to test mock debugger",
+			"type": "mock",
+			"request": "launch",
+			"program": "${workspaceFolder}/test.md",
+			"stopOnEntry": true
+		}
+	]
+}
