@@ -1,7 +1,3 @@
-/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-
 'use strict';
 
 import * as Net from 'net';
@@ -11,7 +7,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { platform } from 'process';
 import { WorkspaceFolder, DebugConfiguration, ProviderResult, CancellationToken } from 'vscode';
-import { MockDebugSession } from './mockDebug';
+import { QemuGdbDebugSession } from './qemuGgbDebugSession';
 
 /*
  * The compile time flag 'runMode' controls how the debug adapter is run.
@@ -45,15 +41,14 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('extension.qemu-gdb-debugger.showAsHex', (variable) => {
 			vscode.window.showInformationMessage(`${variable.container.name}: ${variable.variable.name}`);
+		}),
+		vscode.commands.registerCommand('extension.qemu-gdb-debugger.getProgramName', config => {
+			return vscode.window.showInputBox({
+				placeHolder: "Please enter the name of a markdown file in the workspace folder",
+				value: "readme.md"
+			});
 		})
 	);
-
-	context.subscriptions.push(vscode.commands.registerCommand('extension.qemu-gdb-debugger.getProgramName', config => {
-		return vscode.window.showInputBox({
-			placeHolder: "Please enter the name of a markdown file in the workspace folder",
-			value: "readme.md"
-		});
-	}));
 
 	// register a configuration provider for 'mock' debug type
 	const provider = new MockConfigurationProvider();
@@ -195,7 +190,7 @@ class MockDebugAdapterServerDescriptorFactory implements vscode.DebugAdapterDesc
 		if (!this.server) {
 			// start listening on a random port
 			this.server = Net.createServer(socket => {
-				const session = new MockDebugSession();
+				const session = new QemuGdbDebugSession();
 				session.setRunAsServer(true);
 				session.start(socket as NodeJS.ReadableStream, socket);
 			}).listen(0);
@@ -224,7 +219,7 @@ class MockDebugAdapterNamedPipeServerDescriptorFactory implements vscode.DebugAd
 			const pipePath = platform === "win32" ? join('\\\\.\\pipe\\', pipeName) : join(tmpdir(), pipeName);
 
 			this.server = Net.createServer(socket => {
-				const session = new MockDebugSession();
+				const session = new QemuGdbDebugSession();
 				session.setRunAsServer(true);
 				session.start(<NodeJS.ReadableStream>socket, socket);
 			}).listen(pipePath);
@@ -246,6 +241,6 @@ class MockDebugAdapterNamedPipeServerDescriptorFactory implements vscode.DebugAd
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
 
 	createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
-		return new vscode.DebugAdapterInlineImplementation(new MockDebugSession());
+		return new vscode.DebugAdapterInlineImplementation(new QemuGdbDebugSession());
 	}
 }

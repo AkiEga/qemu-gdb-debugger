@@ -1,7 +1,3 @@
-/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
+import { QemuGdbDebugSession } from './qemuGgbDebugSession';
 
- import { MockDebugSession } from './mockDebug';
-
- MockDebugSession.run(MockDebugSession);
+QemuGdbDebugSession.run(QemuGdbDebugSession);
