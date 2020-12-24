@@ -103,3 +103,58 @@ code:
 ```typescript
 DebugSession.run(GDBDebugSession);
 ```
+
+## 気づいた点
+```puml
+DebugSession デバッグのセッションを管理するクラス
+Runtime デバッグ対象のプロセス
+
+DebugSession <|- Runtime
+
+DebugSession 
+	// 
+	// stop系
+	stopOnEntry -> entry
+	stopOnStep -> step
+	stopOnBreakpoint -> breakpoint
+	stopOnDataBreakpoint -> data breakpoint
+	stopOnException -> exception
+	// 出力系
+	output
+	// 終了系
+	end
+	// その他
+	breakpointValidated
+```
+
+```puml
+initalizedRequest
+↓
+configrationDoneRequest
+↓
+launchRequest
+```
+
+```puml
+User -> DebugSession :*Request
+DebugSession -> Runtime: any action(e.g. continue, step, stepIn)
+User <- DebugSession :sendResponse
+```
+
+ここらへんから
+
+```typescript
+  // setup event handlers
+		this._runtime.on('stopOnEntry', () => {
+			this.sendEvent(new StoppedEvent('entry', QemuGdbDebugSession.threadID));
+		});
+		// User => vscode => nextRequest => 
+		this._runtime.on('stopOnStep', () => {
+			this.sendEvent(new StoppedEvent('step', QemuGdbDebugSession.threadID));
+		}); 
+		this._runtime.on('stopOnBreakpoint', () => {
+			this.sendEvent(new StoppedEvent('breakpoint', QemuGdbDebugSession.threadID));
+		}); // 
+```
+(file: src/qemuGgbDebugSession.ts, line:67-76)
+
